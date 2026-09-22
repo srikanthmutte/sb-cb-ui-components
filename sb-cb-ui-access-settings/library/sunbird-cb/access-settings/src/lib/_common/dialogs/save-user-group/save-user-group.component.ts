@@ -1,6 +1,10 @@
-import { Component, computed, inject, signal } from "@angular/core";
+import { Component, inject } from "@angular/core";
+import { AbstractControl, FormControl, ValidationErrors } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { NsAccessControlConfig } from "../../../_models/access-control.model";
+
+const NAME_PATTERN = /^[a-zA-Z0-9.\-_$\/:\[\] !]+$/;
+const MAX_NAME_LENGTH = 70;
 
 @Component({
   selector: "sb-uic-save-user-group",
@@ -11,22 +15,30 @@ import { NsAccessControlConfig } from "../../../_models/access-control.model";
 export class SaveUserGroupComponent {
   private readonly dialogRef = inject<MatDialogRef<SaveUserGroupComponent>>(MatDialogRef);
   readonly data = inject<{ userGroupName: string }>(MAT_DIALOG_DATA);
-  
-  readonly maxNameLength = 70;
 
-  readonly userGroupName = signal(this.data?.userGroupName || "");
-  readonly isTouched = signal(false);
+  readonly maxNameLength = MAX_NAME_LENGTH;
 
-  readonly isRequiredError = computed(() => !this.userGroupName().trim());
-  readonly isMaxLengthError = computed(() => this.userGroupName().trim().length > this.maxNameLength);
+  readonly nameControl = new FormControl(this.data?.userGroupName || "", [
+    SaveUserGroupComponent.requiredValidator,
+    SaveUserGroupComponent.maxLengthValidator,
+    SaveUserGroupComponent.patternValidator
+  ]);
 
-  readonly isApplyDisabled = computed(() => this.isRequiredError() || this.isMaxLengthError());
-  readonly isRequiredErrorVisible = computed(() => this.isTouched() && this.isRequiredError());
-  readonly isMaxLengthErrorVisible = computed(() => this.isTouched() && this.isMaxLengthError());
+  private static requiredValidator(control: AbstractControl): ValidationErrors | null {
+    return (control.value || "").trim() ? null : { required: true };
+  }
 
-  onNameChange(value: string): void {
-    this.isTouched.set(true);
-    this.userGroupName.set(value || "");
+  private static maxLengthValidator(control: AbstractControl): ValidationErrors | null {
+    return (control.value || "").trim().length > MAX_NAME_LENGTH ? { maxlength: true } : null;
+  }
+
+  private static patternValidator(control: AbstractControl): ValidationErrors | null {
+    const value = (control.value || "").trim();
+    return !value || NAME_PATTERN.test(value) ? null : { pattern: true };
+  }
+
+  showValidationMsg(errorKey: string): boolean {
+    return this.nameControl.hasError(errorKey) && (this.nameControl.dirty || this.nameControl.touched);
   }
 
   cancel(): void {
@@ -34,13 +46,13 @@ export class SaveUserGroupComponent {
   }
 
   apply(): void {
-    if (this.isApplyDisabled()) {
-      this.isTouched.set(true);
+    if (this.nameControl.invalid) {
+      this.nameControl.markAsTouched();
       return;
     }
     this.dialogRef.close({
       action: NsAccessControlConfig.IActions.Confirm,
-      userGroupName: this.userGroupName().trim()
+      userGroupName: (this.nameControl.value || "").trim()
     });
   }
 }

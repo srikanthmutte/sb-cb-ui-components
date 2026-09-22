@@ -8,6 +8,9 @@ import { MatDialog } from '@angular/material/dialog'
 import { SelectQuestionModalComponent } from '../select-question-modal/select-question-modal.component'
 import { BulkUploadAllTypeQuestionComponent } from '../bulk-upload-all-type-question/bulk-upload-all-type-question.component'
 
+/** The most questions one section can be authored with. */
+const MAX_TOTAL_QUESTIONS = 500
+
 @Component({
     selector: 'sb-uic-assessment-sessions',
     templateUrl: './assessment-sessions.component.html',
@@ -32,6 +35,7 @@ export class AssessmentSessionsComponent implements OnInit, OnDestroy, OnChanges
   selectedSectionIndex = 0
   nameMaxLength = 70
   instructionsMaxLength = 1000
+  maxTotalQuestions = MAX_TOTAL_QUESTIONS
   maxSectionWeightage = 100
   questionsList: Array<{ qType: string; identifier: string }> = []
   expandedQuestionIndex: number | null = null
@@ -68,7 +72,7 @@ export class AssessmentSessionsComponent implements OnInit, OnDestroy, OnChanges
     })
 
     this.basicAssessmentForm = this.fb.group({
-      totalQuestions: [0, [Validators.required, Validators.min(1)]],
+      totalQuestions: [0, [Validators.required, Validators.min(1), Validators.max(MAX_TOTAL_QUESTIONS)]],
       maxQuestions: [0, [Validators.required, Validators.min(1), this.displayedWithinTotalValidator()]],
       minPassPercentage: [50, [Validators.required, Validators.min(50), Validators.max(100)]],
       additionalInstructions: ['', [Validators.maxLength(this.instructionsMaxLength)]]
@@ -214,7 +218,7 @@ export class AssessmentSessionsComponent implements OnInit, OnDestroy, OnChanges
     const group = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(this.nameMaxLength)]],
       additionalInstructions: ['', [Validators.maxLength(this.instructionsMaxLength)]],
-      totalQuestions: [0, [Validators.required, Validators.min(1)]],
+      totalQuestions: [0, [Validators.required, Validators.min(1), Validators.max(MAX_TOTAL_QUESTIONS)]],
       maxQuestions: [0, [Validators.required, Validators.min(1), this.displayedWithinTotalValidator()]],
       minPassPercentage: [50, [Validators.required, Validators.min(50), Validators.max(100)]]
     })

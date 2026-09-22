@@ -51,7 +51,7 @@ import { ContentStripWithTabsLibModule, ContentStripWithTabsPillsModule, DialogC
 import { AssignmentViewerV2Component } from './app-toc-assignment-viewerV2/app-toc-assignment-viewerV2.component'
 import { SamuhikCharchaContentComponent } from './samuhik-charcha-content/samuhik-charcha-content/samuhik-charcha-content.component'
 import { AiTutorComponent } from '../ai-tutor/ai-tutor.component'
-
+import { BreadcrumbComponent } from '@sunbird-cb/consumption'
 
 @NgModule({
   declarations: [
@@ -116,6 +116,7 @@ import { AiTutorComponent } from '../ai-tutor/ai-tutor.component'
     MatSelectModule,
     ContentStripWithTabsPillsModule,
     ContentStripWithTabsLibModule,
+    BreadcrumbComponent
   ],
   exports: [
     ContentTocComponent,

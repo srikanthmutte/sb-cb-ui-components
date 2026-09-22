@@ -1,3 +1,5 @@
+import { NsAccessControlConfig } from "../_models/access-control.model";
+
 export const BATCH_RANGES = [
   { label: "1960-1990", start: 1960, end: 1990 },
   { label: "1991-2020", start: 1991, end: 2020 },
@@ -12,3 +14,16 @@ export const CHECKBOX_OPTIONS = [
 // Criteria key used when a L0 MDO (ministry / state) selects every organisation of its hierarchy.
 // The whole ministry / state is then stored as a single criteria instead of the expanded org list.
 export const MINISTRY_OR_STATE_CRITERIA_KEY = "ministryOrStateId";
+
+export const CRITERIA_LABELS: { [key: string]: string } = {
+  [NsAccessControlConfig.SelectionType.Organizations]: "Organisation",
+  [MINISTRY_OR_STATE_CRITERIA_KEY]: "Organisation",
+  [NsAccessControlConfig.SelectionType.Users]: "User",
+  [NsAccessControlConfig.SelectionType.Group]: "Group",
+  [NsAccessControlConfig.SelectionType.Designation]: "Designation",
+  [NsAccessControlConfig.SelectionType.VerificationStatus]: "Verification status",
+  [NsAccessControlConfig.SelectionType.Cadre]: "Cadre",
+  [NsAccessControlConfig.SelectionType.Service]: "Service",
+  [NsAccessControlConfig.SelectionType.Batch]: "Batch",
+  [NsAccessControlConfig.SelectionType.CentralDeputation]: "Deputation flag"
+};

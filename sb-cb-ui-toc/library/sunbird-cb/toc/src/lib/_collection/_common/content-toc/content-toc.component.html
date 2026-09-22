@@ -17,7 +17,7 @@
         </div>
     </div>
 </div>
-<div class="tab-group-container" *ngIf="config?.uiVisibility?.tabs?.visible !== false">
+<div class="tab-group-container" *ngIf="config?.uiVisibility?.tabs?.visible !== false && content.courseCategory !== 'Comprehensive Assessment'">
   <mat-tab-group (selectedTabChange)="handleTabChange($event)" #stickyMenu [class.sticky-mat-tabs]="sticky" mat-stretch-tabs="false" mat-align-tabs="start"
         [selectedIndex]="selectedTabIndex" [ngClass]="{'content-tabs':!fromViewer,'contentSticky': forPreview}">
 
@@ -299,3 +299,37 @@
     </mat-tab>
   </mat-tab-group>
 </div>
+
+@if(content.courseCategory === 'Comprehensive Assessment') {
+  <div class="breadcrumbs">
+      <sb-uic-breadcrumb [widgetData]="breadcrumbData()"></sb-uic-breadcrumb>
+  </div>
+  <div class="courses-incomplete-block mt-4" *ngIf="caPendingCourses?.length">
+    <div class="flex gap-4 items-start p-4 course-incomplete-box">
+      <div class="icon-info"><mat-icon>info</mat-icon></div>
+      <div class="flex flex-col">
+        <span class="mt-1 course-completion-info">{{ 'apptocsinglepage.completeCoursesToUnlock' | translate: { count:
+          caPendingCourses.length } }}</span>
+        <ul class="course-list">
+          <li *ngFor="let course of caPendingCourses">
+            @if(course?.name) {
+              <a class="course-link" [routerLink]="['/app/toc', course?.identifier, 'overview']">{{ course?.name }}</a>
+            }
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="about-block">
+    <ws-widget-app-toc-about [fromViewer]="fromViewer" [pathSet]="pathSet" [content]="content"
+          [contentReadData]="contentReadData" [baseContentReadData]="baseContentReadData" [tocStructure]="tocStructure"
+          [config]="config" [forPreview]="false" [sticky]="sticky" [selectedBatchData]="selectedBatchData"
+          [selectedTabValue]="selectedTabIndex" [resumeData]="resumeData" [batchData]="batchData"
+          [skeletonLoader]="skeletonLoader" [condition]="condition" [kparray]="kparray" [showReviews]="'true'"
+          [languageList]="languageList" [lockCertificate]="lockCertificate"
+          (trigerCompletionSurveyForm)="openSurveyFormPopup($event)" [isBatchFull]="isBatchFull"
+                    [showLimitedSeatsMsg]="showLimitedSeatsMsg" [areAllActiveBatchesFull]="areAllActiveBatchesFull" [fromMDO]="fromMDO">
+        </ws-widget-app-toc-about>
+  </div>
+}
+ 

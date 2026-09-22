@@ -38,6 +38,16 @@ export class AssessmentQuestionListComponent implements OnInit, OnChanges {
   assessmentNoSpecialChar = new RegExp(/^[a-zA-Z0-9\u0900-\u097F._\-\s$":/?,।()\[\]'!]+$/)
   isRegexPassed: boolean = true
   questionText: string = ''
+  /**
+   * What the editor is seeded with, and the only thing it is ever told. `questionText` is
+   * the live value the editor reports back, so binding the editor to that closed the loop:
+   * the parent handed the editor its own content again on every change, and where the value
+   * came back reshaped - the empty case below rewrites it to '' - the editor answered with
+   * `setData`, which re-parses the document and drops the selection and the undo stack.
+   * A question carrying only an image erased itself that way as it was being authored.
+   * The seed is written when a question is loaded, and never from an edit.
+   */
+  questionSeed: string = ''
   fitbCount: number = 0
   fitbConfig = {
     maxOptions: 7,
@@ -59,6 +69,15 @@ export class AssessmentQuestionListComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['questionData'] && !changes['questionData'].firstChange) {
       this.initializeQuestionData()
+    }
+    // `initializeQuestionData` drops the card back to the loading state whenever it is
+    // re-bound, and only a click used to start the fetch that leaves it again. A question
+    // that is already open when that happens - the parent rebuilds `questionsList` every
+    // time the assessment reloads - would then sit on the spinner for ever, because no
+    // further click is coming. Anything that leaves the card open and unloaded is
+    // recovered here.
+    if (this.isExpanded && !this.questionDataLoaded) {
+      this.loadQuestionDetails()
     }
   }
 
@@ -84,6 +103,7 @@ export class AssessmentQuestionListComponent implements OnInit, OnChanges {
       } else if (this.questionData.name) {
         this.questionText = this.questionData.name
       }
+      this.questionSeed = this.questionText
 
       // Set difficulty level
       if (this.questionData.questionLevel) {
@@ -363,49 +383,62 @@ export class AssessmentQuestionListComponent implements OnInit, OnChanges {
 
   onExpandQuestion(): void {
     this.questionExpanded.emit(this.questionIndex - 1)
-    // If this is an existing question (has do_ identifier), fetch complete data on expand
     // Only fetch if we're expanding (not collapsing)
-    if (!this.isExpanded && this.questionData.identifier && this.questionData.identifier.startsWith('do_')) {
-      // Fetch the details only once. Re-populating rebuilds every rich text editor in the
-      // expanded question (one for the body plus one per option), so letting repeated expands
-      // - or impatient double clicks while the first call is still out - stack duplicate
-      // responses tears down and recreates all of them once per response.
-      if (this.questionDetailsFetched || this.questionDetailsFetchInFlight) {
-        this.questionDataLoaded = true
-        return
-      }
-
-      const reqBody = {
-        request: {
-          search: {
-            identifier: [this.questionData.identifier]
-          }
-        }
-      }
-
-      this.questionDetailsFetchInFlight = true
-      this.assessemntService.getQuestionReadDetailsModeEdit(reqBody).subscribe({
-        next: (response: any) => {
-          this.questionDetailsFetchInFlight = false
-          this.questionDataLoaded = true
-          if (response?.result?.questions && response.result.questions.length > 0) {
-            this.questionDetailsFetched = true
-            const completeQuestionData = response.result.questions[0]
-            // Merge complete data with existing questionData
-            this.questionData = { ...this.questionData, ...completeQuestionData }
-            // Now populate the form with complete data
-            this.populateQuestionForm()
-          }
-        },
-        error: (error: any) => {
-          this.questionDetailsFetchInFlight = false
-          this.questionDataLoaded = true
-          console.error('Error fetching question details:', error)
-        }
-      })
-    } else {
-      this.questionDataLoaded = true
+    if (!this.isExpanded) {
+      this.loadQuestionDetails()
     }
+  }
+
+  /**
+   * Fills in the body the card was not listed with - the listing carries a summary, and the
+   * editors cannot render without the rest. `questionDataLoaded` is what holds the spinner
+   * up until then, so every path out of here lowers it.
+   */
+  private loadQuestionDetails(): void {
+    const identifier = this.questionData && this.questionData.identifier
+    // A question that has not been saved yet carries no `do_` id, so it has nothing to fetch.
+    if (!identifier || !identifier.startsWith('do_')) {
+      this.questionDataLoaded = true
+      return
+    }
+
+    // Fetch the details only once. Re-populating rebuilds every rich text editor in the
+    // expanded question (one for the body plus one per option), so letting repeated expands
+    // - or impatient double clicks while the first call is still out - stack duplicate
+    // responses tears down and recreates all of them once per response.
+    if (this.questionDetailsFetched || this.questionDetailsFetchInFlight) {
+      this.questionDataLoaded = true
+      return
+    }
+
+    const reqBody = {
+      request: {
+        search: {
+          identifier: [identifier]
+        }
+      }
+    }
+
+    this.questionDetailsFetchInFlight = true
+    this.assessemntService.getQuestionReadDetailsModeEdit(reqBody).subscribe({
+      next: (response: any) => {
+        this.questionDetailsFetchInFlight = false
+        this.questionDataLoaded = true
+        if (response?.result?.questions && response.result.questions.length > 0) {
+          this.questionDetailsFetched = true
+          const completeQuestionData = response.result.questions[0]
+          // Merge complete data with existing questionData
+          this.questionData = { ...this.questionData, ...completeQuestionData }
+          // Now populate the form with complete data
+          this.populateQuestionForm()
+        }
+      },
+      error: (error: any) => {
+        this.questionDetailsFetchInFlight = false
+        this.questionDataLoaded = true
+        console.error('Error fetching question details:', error)
+      }
+    })
   }
 
   onDeleteQuestion(): void {

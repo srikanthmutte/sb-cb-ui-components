@@ -200,10 +200,9 @@ export class CardTransformerService {
   /**
    * Plan-level cards: one card per CBP / APAR / AI-CBP training plan.
    *
-   * Fed by the plan-level list (POST /cbplan/v2/search -> result.result.data[]), NOT by the
-   * CBPlan V3 dictionary keys the courseCard path uses — those flatten every plan down to one
-   * item per content id, so the plan itself (its name, year, content count) is already gone by
-   * the time the transformer sees them.
+   * Fed by the plan-level lists CBPlan V4 returns, NOT by a content dictionary — those
+   * flatten every plan down to one item per content id, so the plan itself (its name, year,
+   * content count) is already gone by the time the transformer sees them.
    *
    * The plan list is shared by all three plan pills, so each `apiDetailsKey` narrows it to the
    * plans that pill owns — mirroring the aparApi / trainingPlanApi / draftCBPplanApi split above.
@@ -440,7 +439,7 @@ export class CardTransformerService {
       if (result?.['data'] && Array.isArray(result['data'])) {
         return result['data'] as Record<string, unknown>[]
       }
-      // Plan search (POST /cbplan/v2/search) nests one level deeper:
+      // Some plan payloads nest one level deeper:
       // { result: { result: { data: [...], totalCount, facets } } }.
       if (result?.['result'] && typeof result['result'] === 'object') {
         const inner = result['result'] as Record<string, unknown>

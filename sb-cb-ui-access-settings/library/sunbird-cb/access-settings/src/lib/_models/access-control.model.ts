@@ -169,6 +169,8 @@ export interface IReusableUserGroupResult {
   updatedby?: string;
   createddate?: string;
   updateddate?: string;
+  createdByName?: string;
+  updatedByName?: string;
 }
 
 export interface IReusableUserGroupSearchResponse {
@@ -187,4 +189,12 @@ export interface IVisiblilityOnOff {
   on: string;
   off: string;
   default: string;
+}
+export interface IReuseUserGroupRow {
+  id: string;
+  name: string;
+  owner: string;
+  updatedOn: string;
+  conditions: string[];
+  searchText: string;
 }

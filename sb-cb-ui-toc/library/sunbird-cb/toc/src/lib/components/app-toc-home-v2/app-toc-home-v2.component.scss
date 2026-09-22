@@ -1313,3 +1313,41 @@ mat-divider {
   font-weight: 700;
   color: #D32F2F;
 }
+.locked-assessment-block {
+  width: 100%;
+
+  .not-attempted {
+    font-size: 0.875rem;
+    line-height: 20px;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 600;
+
+    .attempts-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .attempts-text ::ng-deep b {
+      font-weight: 700;
+      color: rgba(0, 0, 0, 0.87);
+    }
+  }
+
+  .locked-assessment-btn {
+    width: 100%;
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    border-radius: 4px;
+    padding: 1rem;
+  }
+
+  .locked-assessment-hint {
+    font-size: 0.80rem;
+    line-height: 16px;
+    color: rgba(0, 0, 0, 0.6);
+    text-align: start;
+  }
+}

@@ -471,3 +471,55 @@
 :host ::ng-deep .multiline-select .mat-mdc-select-arrow-wrapper {
   margin-right: 10px;
 }
+
+::ng-deep .breadcrumbs {
+  .breadcrumb-list {
+    padding: 0 !important;
+    .breadcrumb-item:not(:last-child) {
+      .breadcrumb-link {
+        color: var(--color-primary-500) !important;
+      }
+    }
+  }
+}
+
+.courses-incomplete-block {
+  .icon-info mat-icon {
+    color: var(--color-secondary-800) !important;
+  }
+  .course-completion-info {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-secondary-800);
+  }
+  
+  .course-incomplete-box {
+    border-radius: 12px;
+    background-color: var(--color-secondary-50);
+    border: 1px solid var(--color-secondary-400);
+  }
+
+  .course-list {
+    padding-left: 18px;
+    li {
+      color: var(--color-primary-500) !important;
+      font-weight: 600;
+    }
+
+    .course-link {
+      color: inherit;
+      font-weight: inherit;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover,
+      &:focus {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+::ng-deep .about-block .toc-about {
+  padding: 0 !important;
+}

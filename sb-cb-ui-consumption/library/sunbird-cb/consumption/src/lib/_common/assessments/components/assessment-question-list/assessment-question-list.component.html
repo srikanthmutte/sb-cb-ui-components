@@ -26,7 +26,7 @@
     <div class="question-content-expanded">
       <sb-uic-assessment-rich-text
         [specificToolBar]="questionData.qType === 'FTB' ? 'FTB' : (questionData.qType === 'MTF' ? 'mtf' : '')"
-        [textToBeShown]="questionText" (getContent)="getQuestionContent($event)"
+        [textToBeShown]="questionSeed" (getContent)="getQuestionContent($event)"
         [showAudioVideoToolBar]="questionData.qType === 'FTB' ? false : true" [ftbCount]="fitbCount"
         [ftbMaxCount]="fitbConfig?.maxOptions" [readOnly]="isReadOnly">
       </sb-uic-assessment-rich-text>

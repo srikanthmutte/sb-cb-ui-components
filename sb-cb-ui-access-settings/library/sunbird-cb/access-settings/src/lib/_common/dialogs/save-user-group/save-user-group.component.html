@@ -1,26 +1,27 @@
 <div class="dialog-save-user-group p-4">
-  <div class="save-user-group-title mb-4">Label Reusable Group</div>
+  <div class="save-user-group-title mb-4">User group name</div>
 
   <div class="mat-full-radius">
     <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
       <input
         matInput
         placeholder="Enter user group name"
-        [value]="userGroupName()"
-        (input)="onNameChange($any($event.target).value)"
+        [formControl]="nameControl"
         (keyup.enter)="apply()"
       />
+      <mat-hint>Only ( a-z/A-Z , 0-9 . - _ $ / : [ ]' ' !) characters are supported</mat-hint>
+      @if (showValidationMsg('required')) {
+        <mat-error>User group name is required</mat-error>
+      } @else if (showValidationMsg('maxlength')) {
+        <mat-error>User group name cannot exceed {{ maxNameLength }} characters</mat-error>
+      } @else if (showValidationMsg('pattern')) {
+        <mat-error>Only ( a-z/A-Z , 0-9 . _ - $ / : [ ]' ' !) characters are supported</mat-error>
+      }
     </mat-form-field>
   </div>
 
-  @if (isRequiredErrorVisible()) {
-    <div class="save-user-group-error mt-1">User group name is required</div>
-  } @else if (isMaxLengthErrorVisible()) {
-    <div class="save-user-group-error mt-1">User group name cannot exceed {{ maxNameLength }} characters</div>
-  }
-
   <div class="save-user-group-actions flex items-center justify-center gap-4 mt-4">
     <button mat-flat-button class="mat-btn-outline gap-2 border-radius-4" (click)="cancel()">Cancel</button>
-    <button mat-flat-button class="new-bg-color text-white" [disabled]="isApplyDisabled()" (click)="apply()">Apply</button>
+    <button mat-flat-button class="new-bg-color text-white" [disabled]="nameControl.invalid" (click)="apply()">Apply</button>
   </div>
 </div>

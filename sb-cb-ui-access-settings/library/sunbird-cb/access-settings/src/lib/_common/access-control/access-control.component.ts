@@ -2330,6 +2330,10 @@ export class AccessControlComponent implements OnInit, AfterViewInit, OnDestroy 
       return true
     }
 
+    if(this.config.context.type === 'training-plan' && this.config?.application === this.MDO_APPLICATION) {
+      return true
+    }
+
     return false;
   }
 

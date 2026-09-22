@@ -48,48 +48,21 @@ export const API_REGISTRY: ApiRegistryConfig = {
     method: ApiMethod.Post
   },
   // ── Plan-level lists (CardType.PlanCard) ───────────────────────────────────────
-  // The dictionary keys above return CONTENT: they flatten every plan down to one item per
-  // content id, so a plan card cannot be built from them. These keys hit the plan search
-  // instead, which returns whole plans — { result: { result: { data: [ { id, name, planYear,
-  // endDate, contentList, isApar, ... } ] } } }.
-  //
-  // All three share one request and one response; CardTransformerService.processPlanCards
-  // narrows it per key (APAR / AI-CBP / plain CBP), which is why pageSize covers the whole
-  // year rather than just maxCardsToShow — a page of only APAR plans would otherwise leave
-  // the CBP pill empty. `filter.orgIdList` is a placeholder: ContentApiService replaces it
-  // with the user's rootOrgId.
+  // Older spellings of the three keys above, kept so existing page configs keep working.
+  // They named POST /cbplan/v2/search, which is no longer used: ContentApiService
+  // short-circuits them to UserCbpPlansService alongside the V4 keys, so all six describe
+  // the same single request.
   aparPlanListApi: {
-    endpoint: '/apis/proxies/v8/cbplan/v2/search',
-    method: ApiMethod.Post,
-    body: {
-      filter: { orgIdList: [] },
-      pageNumber: 0,
-      pageSize: 100,
-      searchString: '',
-      facets: []
-    }
+    endpoint: '/apis/proxies/v8/cbplan/v4/user/dictionary',
+    method: ApiMethod.Post
   },
   trainingPlanListApi: {
-    endpoint: '/apis/proxies/v8/cbplan/v2/search',
-    method: ApiMethod.Post,
-    body: {
-      filter: { orgIdList: [] },
-      pageNumber: 0,
-      pageSize: 100,
-      searchString: '',
-      facets: []
-    }
+    endpoint: '/apis/proxies/v8/cbplan/v4/user/dictionary',
+    method: ApiMethod.Post
   },
   draftCBPplanListApi: {
-    endpoint: '/apis/proxies/v8/cbplan/v2/search',
-    method: ApiMethod.Post,
-    body: {
-      filter: { orgIdList: [] },
-      pageNumber: 0,
-      pageSize: 100,
-      searchString: '',
-      facets: []
-    }
+    endpoint: '/apis/proxies/v8/cbplan/v4/user/dictionary',
+    method: ApiMethod.Post
   },
   trendingOnIGOTApi: {
     endpoint: '/apis/proxies/v8/trending/content/search',

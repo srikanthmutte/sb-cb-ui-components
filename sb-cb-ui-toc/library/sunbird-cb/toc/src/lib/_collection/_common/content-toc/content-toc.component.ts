@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, HostListener, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
+import { AfterViewInit, Component, EventEmitter, HostListener, Inject, Input, OnChanges, OnInit, Output, QueryList, signal, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ConfigurationsService, EventService, UtilityService, WsEvents } from '@sunbird-cb/utils-v2'
 import { CommonMethodsService } from '@sunbird-cb/consumption'
@@ -17,8 +17,9 @@ import { tap } from 'rxjs/operators'
 import { ViewerDataService } from '../../../services/viewer-data.service'
 import { MatTab } from '@angular/material/tabs'
 import { SamuhikCharchaService } from '../../../_services/samuhik-charcha.service'
+import { ComprehensiveAssessmentService } from '../../../_services/comprehensive-assessment.service'
 import * as _ from 'lodash'
-import { NsContent } from '../../../_collection-api'
+import { IComprehensiveAssessmentCourse, IComprehensiveAssessmentStatus, NsContent } from '../../../_collection-api'
 @Component({
   selector: 'ws-widget-content-toc',
   templateUrl: './content-toc.component.html',
@@ -101,6 +102,10 @@ export class ContentTocComponent implements OnInit, AfterViewInit, OnChanges {
   enableSamuhikCharchaTab = false
   samuhikConfig: any
   batchId: any
+
+  caPendingCourses: IComprehensiveAssessmentCourse[] = []
+  breadcrumbData = signal<any[]>([])
+
   constructor(
     private route: ActivatedRoute,
     private utilityService: UtilityService,
@@ -114,9 +119,11 @@ export class ContentTocComponent implements OnInit, AfterViewInit, OnChanges {
     private viewerDataSvc: ViewerDataService,
     private samuhikCharchaSvc: SamuhikCharchaService,
     private commonMethodsSvc: CommonMethodsService,
+    private comprehensiveAssessmentSvc: ComprehensiveAssessmentService,
     @Inject('environment') private environment: any
 
   ) { }
+
 
   isCommentApiEnabled(): boolean {
     return !!this.commonMethodsSvc.getEnabledUrl({
@@ -215,7 +222,8 @@ export class ContentTocComponent implements OnInit, AfterViewInit, OnChanges {
     } else {
       this.isMobileForAI = false
     }
-    this.menuPosition = this.tabElement._elementRef.nativeElement.offsetTop
+    this.menuPosition =
+      this.tabElement._elementRef.nativeElement.offsetTop || 0;
 
     this.route.queryParamMap.subscribe(async (params: any) => {
 
@@ -249,6 +257,10 @@ export class ContentTocComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   async ngOnChanges(changes: SimpleChanges) {
+
+    if (changes['contentReadData'] || changes['content']) {
+      this.loadComprehensiveAssessmentStatus()
+    }
 
     this.resourceIdentifier = this.viewerDataSvc.resourceId
 
@@ -876,5 +888,41 @@ export class ContentTocComponent implements OnInit, AfterViewInit, OnChanges {
 
   resumeContentCall() {
     this.resumeContent.emit()
+  }
+  
+  private setBreadcrumbData(): void {
+    const plan = this.contentReadData?.trainingPlan_v2
+    const planTitle = plan?.orgName || this.contentReadData?.source || this.contentReadData?.organisation?.[0] || ''
+    const crumbs: any[] = [
+      { url: '/page/home', title: 'Home', icon: '' },
+      { url: '/page/home', title: 'APAR', icon: '' },
+    ]
+
+    if (planTitle) {
+      crumbs.push({
+        url: plan?.identifier ? `/app/plans/${plan.identifier}` : '',
+        queryParams: plan?.planYear ? { planYear: plan.planYear } : undefined,
+        title: planTitle,
+        icon: '',
+      })
+    }
+
+    crumbs.push({ url: '', title: this.contentReadData?.courseCategory || 'Comprehensive Assessment', icon: '' })
+    this.breadcrumbData.set(crumbs)
+  }
+
+  private loadComprehensiveAssessmentStatus(): void {
+    if (this.content?.courseCategory !== 'Comprehensive Assessment') {
+      this.caPendingCourses = []
+      return
+    }
+    this.setBreadcrumbData()
+    this.comprehensiveAssessmentSvc.getUnlockStatus(this.contentReadData)
+      .then((status: IComprehensiveAssessmentStatus) => {
+        this.caPendingCourses = status.pendingCourses
+      })
+      .catch(() => {
+        this.caPendingCourses = []
+      })
   }
 }

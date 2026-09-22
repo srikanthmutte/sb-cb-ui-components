@@ -191,7 +191,7 @@
     </div>
 </ng-container>
 
-<div class="flex flex-col my-4 px-4" [class.mt60]="sticky" [ngClass]="isMobile ? '' : 'gap-10'">
+<div class="flex flex-col my-4 px-4 toc-about" [class.mt60]="sticky" [ngClass]="isMobile ? '' : 'gap-10'">
     <ng-container
         *ngIf="(content?.completionStatus === 2 || content?.certificateObj?.certId) && !fromMarketPlace && !disableCertificate && config?.uiVisibility?.about?.certificate !== false">
         <div class="certificate-container" *ngIf="!skeletonLoader">

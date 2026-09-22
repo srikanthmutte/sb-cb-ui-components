@@ -4,36 +4,14 @@ import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 import { Subject } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { AccessControlService } from "../../../_services/access-control.service";
-import { IReusableUserGroupResult, NsAccessControlConfig } from "../../../_models/access-control.model";
-import { MINISTRY_OR_STATE_CRITERIA_KEY } from "../../../_constants/app.constants";
+import { IReusableUserGroupResult, IReuseUserGroupRow, NsAccessControlConfig } from "../../../_models/access-control.model";
+import { MINISTRY_OR_STATE_CRITERIA_KEY, CRITERIA_LABELS } from "../../../_constants/app.constants";
 
 const PAGE_SIZE = 5;
 const LOAD_LIMIT = 100;
 const SEARCH_DEBOUNCE_MS = 300;
 const SORT_BY = "updateddate";
 const SORT_ORDER = "desc";
-
-const CRITERIA_LABELS: { [key: string]: string } = {
-  [NsAccessControlConfig.SelectionType.Organizations]: "Organisation",
-  [MINISTRY_OR_STATE_CRITERIA_KEY]: "Organisation",
-  [NsAccessControlConfig.SelectionType.Users]: "User",
-  [NsAccessControlConfig.SelectionType.Group]: "Group",
-  [NsAccessControlConfig.SelectionType.Designation]: "Designation",
-  [NsAccessControlConfig.SelectionType.VerificationStatus]: "Verification status",
-  [NsAccessControlConfig.SelectionType.Cadre]: "Cadre",
-  [NsAccessControlConfig.SelectionType.Service]: "Service",
-  [NsAccessControlConfig.SelectionType.Batch]: "Batch",
-  [NsAccessControlConfig.SelectionType.CentralDeputation]: "Deputation flag"
-};
-
-export interface IReuseUserGroupRow {
-  id: string;
-  name: string;
-  owner: string;
-  updatedOn: string;
-  conditions: string[];
-  searchText: string;
-}
 
 @Component({
   selector: "sb-uic-reuse-user-group",
@@ -158,7 +136,7 @@ export class ReuseUserGroupComponent implements OnInit {
     return {
       id: group?.usergroupid,
       name: group?.usergroupname,
-      owner: group?.createdby || "",
+      owner: group?.createdByName || "",
       updatedOn: group?.updateddate || group?.createddate || "",
       conditions,
       searchText: [group?.usergroupname, ...conditions].join(" ").toLowerCase()

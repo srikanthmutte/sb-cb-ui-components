@@ -36,6 +36,7 @@ import { MobileAppsService } from '../../services/mobile-apps.service'
 import { HandleClaimService } from '../../_collection/_common/content-toc/content-services/handle-claim.service'
 import { ActionService } from '../../services/action.service'
 import { RatingService } from '../../_services/rating.service'
+import { ComprehensiveAssessmentService } from '../../_services/comprehensive-assessment.service'
 import { ViewerUtilService } from '../../services/viewer-util.service'
 import { LoadCheckService } from '../../services/load-check.service'
 import { ResetRatingsService } from '../../services/reset-ratings.service'
@@ -54,6 +55,7 @@ import { NsCardContent } from '../../models/card-content.model'
 import { NonReleventFeedbackDialogComponent } from '../non-relevent-feedback-dialog/non-relevent-feedback-dialog.component'
 import { AppTocV2Service } from '../../services/app-toc-v2.service'
 import { UnenrollConfirmDialogComponent } from '../unenroll-confirm-dialog/unenroll-confirm-dialog.component'
+import { IComprehensiveAssessmentAttempts, IComprehensiveAssessmentStatus } from '../../_models/common.model'
 
 export enum ErrorType {
   internalServer = 'internalServer',
@@ -129,6 +131,14 @@ export class AppTocHomeV2Component implements OnInit, OnDestroy, AfterViewChecke
   primaryCategory = NsContent.EPrimaryCategory
   courseCategory = NsContent.ECourseCategory
   WFBlendedProgramStatus = NsContent.WFBlendedProgramStatus
+  comprehensiveAssessmentCategory = 'Comprehensive Assessment'
+  isAllCoursesCompleted = false
+  assessmentAttempts: IComprehensiveAssessmentAttempts = {
+    attemptsMade: 0,
+    attemptsAllowed: 0,
+    attemptsRemaining: 0,
+    isAttempted: false,
+  }
   askAuthorEnabled = true
   trainingLHubEnabled = false
   trainingLHubCount$?: Observable<number>
@@ -260,14 +270,11 @@ export class AppTocHomeV2Component implements OnInit, OnDestroy, AfterViewChecke
       this.sticky = false
     }
 
-    if (this.scrollLimit) {
+    if (this.scrollLimit && this.rcElement) {
       if ((window.scrollY + this.rcElem.BottomPos) >= this.scrollLimit) {
-        this.rcElement.nativeElement.style.position = 'sticky'
+        this.rcElement.nativeElement.style.position = "sticky";
       } else {
-        if (this.rcElement) {
-          this.rcElement.nativeElement.style.position = 'fixed'
-        }
-
+        this.rcElement.nativeElement.style.position = "fixed";
       }
     }
 
@@ -314,6 +321,7 @@ export class AppTocHomeV2Component implements OnInit, OnDestroy, AfterViewChecke
     public appTocV2Svc: AppTocV2Service,
     private location: Location,
     private commonMethodsSvc: CommonMethodsService,
+    private comprehensiveAssessmentSvc: ComprehensiveAssessmentService,
     @Inject('environment') public environment: any,
     private cdr: ChangeDetectorRef
   ) {
@@ -550,6 +558,49 @@ export class AppTocHomeV2Component implements OnInit, OnDestroy, AfterViewChecke
       return !this.configSvc.restrictedFeatures.has('tocAnalytics')
     }
     return false
+  }
+
+  get isComprehensiveAssessment(): boolean {
+    return this.contentReadData?.courseCategory === this.comprehensiveAssessmentCategory
+      || this.content?.courseCategory === this.comprehensiveAssessmentCategory
+  }
+
+  get isAssessmentLocked(): boolean {
+    return this.isComprehensiveAssessment && !this.isAllCoursesCompleted
+  }
+
+  get isAssessmentAttempted(): boolean {
+    return this.assessmentAttempts.isAttempted
+  }
+
+  get assessmentAttemptsRemaining(): number {
+    return this.assessmentAttempts.attemptsRemaining
+  }
+
+  get totalAssessmentAttempts(): number {
+    return this.assessmentAttempts.attemptsAllowed || this.contentReadData?.maxAssessmentRetakeAttempts || 0
+  }
+
+  private loadComprehensiveAssessmentStatus(): void {
+    if (!this.isComprehensiveAssessment) {
+      return
+    }
+    this.comprehensiveAssessmentSvc.getUnlockStatus(this.contentReadData)
+      .then((status: IComprehensiveAssessmentStatus) => {
+        this.isAllCoursesCompleted = status.isAllCoursesCompleted
+      })
+      .catch((err: any) => {
+        this.isAllCoursesCompleted = false
+        this.loggerSvc.warn('Unable to resolve comprehensive assessment unlock status', err)
+      })
+
+    this.comprehensiveAssessmentSvc.getAttemptStatus(this.contentReadData)
+      .then((attempts: IComprehensiveAssessmentAttempts) => {
+        this.assessmentAttempts = attempts
+      })
+      .catch((err: any) => {
+        this.loggerSvc.warn('Unable to resolve comprehensive assessment attempts', err)
+      })
   }
 
   get isResource() {
@@ -2237,6 +2288,7 @@ export class AppTocHomeV2Component implements OnInit, OnDestroy, AfterViewChecke
     // Added to make sure this reference was incorrect, assigning again to make sure global variable is properly updated
     this.queryParamsData = queryParamsDataTemp
     this.updateBadgeTooltipText()
+    this.loadComprehensiveAssessmentStatus()
 
     // Continue with the rest of the processing
     this.loadLanguageData()

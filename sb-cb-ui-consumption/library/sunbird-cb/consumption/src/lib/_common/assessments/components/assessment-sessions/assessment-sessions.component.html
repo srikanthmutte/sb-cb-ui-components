@@ -206,7 +206,17 @@
       <div class="form-field mat-full-radius">
         <label class="field-label required">What is the number of questions you will be adding?</label>
         <mat-form-field appearance="outline" class="full-width">
-          <input matInput type="number" formControlName="totalQuestions" min="1" placeholder="0">
+          <input matInput type="number" formControlName="totalQuestions" min="1" [max]="maxTotalQuestions"
+            placeholder="0">
+          <mat-error *ngIf="currentBasicSectionGroup?.get('totalQuestions')?.hasError('required')">
+            This field is required
+          </mat-error>
+          <mat-error *ngIf="currentBasicSectionGroup?.get('totalQuestions')?.hasError('min')">
+            Value must be 1 or greater
+          </mat-error>
+          <mat-error *ngIf="currentBasicSectionGroup?.get('totalQuestions')?.hasError('max')">
+            Cannot add more than {{ maxTotalQuestions }} questions
+          </mat-error>
         </mat-form-field>
       </div>
 
@@ -305,12 +315,16 @@
       <div class="form-field mat-full-radius">
         <label class="field-label required">What is the number of questions you will be adding?</label>
         <mat-form-field appearance="outline" class="full-width">
-          <input matInput type="number" formControlName="totalQuestions" min="1" placeholder="0">
+          <input matInput type="number" formControlName="totalQuestions" min="1" [max]="maxTotalQuestions"
+            placeholder="0">
           <mat-error *ngIf="basicAssessmentForm?.get('totalQuestions')?.hasError('required')">
             This field is required
           </mat-error>
           <mat-error *ngIf="basicAssessmentForm?.get('totalQuestions')?.hasError('min')">
             Value must be 1 or greater
+          </mat-error>
+          <mat-error *ngIf="basicAssessmentForm?.get('totalQuestions')?.hasError('max')">
+            Cannot add more than {{ maxTotalQuestions }} questions
           </mat-error>
         </mat-form-field>
       </div>

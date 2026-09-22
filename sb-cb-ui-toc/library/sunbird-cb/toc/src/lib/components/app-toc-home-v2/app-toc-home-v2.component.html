@@ -1,6 +1,27 @@
 <ng-container *ngIf="courseID else noDataFound">
   <ng-template #enrollFunctionality>
     <div [hidden]="isResource && !content?.artifactUrl?.length" class="flex flex-col gap-4 text-center">
+      <!-- Comprehensive assessment locked block: shown until every linked course is completed -->
+      <ng-container *ngIf="isAssessmentLocked">
+        <div class="flex flex-col gap-2 locked-assessment-block">
+          <div class="not-attempted flex items-center justify-start gap-1">
+            <mat-icon class="attempts-icon nodtranslate">repeat</mat-icon>
+            <span class="attempts-status">
+              {{ (isAssessmentAttempted ? 'apptochome.attempted' : 'apptochome.notAttempted') | translate }}
+            </span>
+            <span class="attempts-separator">&middot;</span>
+            <span class="attempts-text" [innerHTML]="'apptochome.attemptsRemaining' | translate: { remaining:
+              assessmentAttemptsRemaining, total: totalAssessmentAttempts }"></span>
+          </div>
+          <button type="button" class="flex action-button justify-center locked-assessment-btn" disabled>
+            {{ 'apptochome.locked' | translate }}
+          </button>
+          <span class="locked-assessment-hint">
+            {{ 'apptochome.completeCoursesToUnlockAssessment' | translate }}
+          </span>
+        </div>
+      </ng-container>
+
       <!-- Course block -->
       <ng-container *ngIf="contentReadData?.primaryCategory !== primaryCategory.PROGRAM
                     && contentReadData?.primaryCategory !== primaryCategory.CURATED_PROGRAM
@@ -78,7 +99,7 @@
                       !(contentReadData?.primaryCategory === primaryCategory.RESOURCE && !content?.artifactUrl)) &&
                       !(contentReadData?.primaryCategory === primaryCategory.PROGRAM) &&
                       !(contentReadData?.primaryCategory === primaryCategory.MANDATORY_COURSE_GOAL)">
-          <ng-container *ngIf="contentReadData?.primaryCategory !== primaryCategory.RESOURCE  && !enrollBtnLoading">
+          <ng-container *ngIf="contentReadData?.primaryCategory !== primaryCategory.RESOURCE  && !enrollBtnLoading && !isAssessmentLocked">
             <a class="flex action-button justify-center resume" *ngIf="!forPreview || isInIFrame" (click)="handleEnrollment($event)"
               [ngClass]="{'disable-start-btn': !canEnroll()}">
               <ng-container>
@@ -103,7 +124,7 @@
           <ng-container
             *ngIf="(courseCategory?.MODERATED_PROGRAM === contentReadData?.courseCategory) && (contentReadData?.batches && !batchData?.enrolled)">
             <ng-container
-              *ngIf="((contentReadData?.primaryCategory !== primaryCategory.RESOURCE)  && !enrollBtnLoading) && !contentReadData?.batches[0].endDate">
+              *ngIf="((contentReadData?.primaryCategory !== primaryCategory.RESOURCE)  && !enrollBtnLoading) && !contentReadData?.batches[0].endDate && !isAssessmentLocked">
               <a class="flex action-button justify-center resume" (click)="handleEnrollment($event)">
                 <ng-container *ngIf="!forPreview || isInIFrame">
                   {{'apptochome.enroll' | translate}}
@@ -224,7 +245,7 @@
       </ng-container>
 
       <!-- Curated program block -->
-      <ng-container *ngIf="contentReadData?.primaryCategory === primaryCategory.CURATED_PROGRAM && !batchData?.enrolled && !enrollBtnLoading">
+      <ng-container *ngIf="contentReadData?.primaryCategory === primaryCategory.CURATED_PROGRAM && !batchData?.enrolled && !enrollBtnLoading && !isAssessmentLocked">
         <a class="flex action-button justify-center resume" *ngIf="!forPreview || isInIFrame" (click)="handleEnrollment($event)">
           <ng-container>
             {{ 'apptochome.enroll' | translate }}
@@ -233,7 +254,7 @@
       </ng-container>
       <!-- STANDALONE_ASSESSMENT black -->
       <ng-container
-        *ngIf="contentReadData?.primaryCategory === primaryCategory.STANDALONE_ASSESSMENT && !batchData?.enrolled && !enrollBtnLoading && contentReadData?.courseCategory !== 'Invite-Only Assessment'">
+        *ngIf="contentReadData?.primaryCategory === primaryCategory.STANDALONE_ASSESSMENT && !batchData?.enrolled && !enrollBtnLoading && contentReadData?.courseCategory !== 'Invite-Only Assessment' && !isAssessmentLocked">
         <a class="flex action-button justify-center resume" (click)="handleEnrollment($event)" *ngIf="!forPreview || isInIFrame">
           <ng-container>
             {{ 'apptochome.enroll' | translate }}

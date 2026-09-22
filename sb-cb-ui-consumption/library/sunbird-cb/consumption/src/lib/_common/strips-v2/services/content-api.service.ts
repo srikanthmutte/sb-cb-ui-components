@@ -51,9 +51,15 @@ export class ContentApiService {
       case 'aparApi':
       case 'trainingPlanApi':
       case 'draftCBPplanApi':
-        // CBPlan V4. These three keys are the three slices of ONE response, and
-        // UserCbpPlansService already splits them — so each section takes its own list off
-        // a single call rather than fetching and re-filtering the whole dataset.
+      // The older *PlanListApi spellings resolve here too. They named the retired plan
+      // search, so a config still using one would otherwise call an endpoint we no longer
+      // use; routing them to V4 keeps those configs working without a config deploy.
+      case 'aparPlanListApi':
+      case 'trainingPlanListApi':
+      case 'draftCBPplanListApi':
+        // CBPlan V4. These keys are slices of ONE response, and UserCbpPlansService already
+        // splits them — so each section takes its own list off a single call rather than
+        // fetching and re-filtering the whole dataset.
         return of(await this.loadCbpPlansV4(apiDetailsKey))
       default:
         let config: ApiRegistryEntry | undefined
@@ -99,10 +105,13 @@ export class ContentApiService {
     const plans = await this.userCbpPlansSvc.getUserCbpPlansAsync()
     switch (apiDetailsKey) {
       case 'aparApi':
+      case 'aparPlanListApi':
         return plans.aparPlanList
       case 'draftCBPplanApi':
+      case 'draftCBPplanListApi':
         return plans.aiCbpPlanList
       case 'trainingPlanApi':
+      case 'trainingPlanListApi':
         return plans.cbpPlanList
       default:
         return []
